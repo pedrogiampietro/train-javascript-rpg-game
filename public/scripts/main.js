@@ -13,6 +13,7 @@ let tinChestplate = null;
 let crystalLegplates = null;
 let adamantiteSword = null;
 let monsters = [];
+let selectedMonster = null;
 
 // Função assíncrona para carregar e inicializar o personagem e monstros
 async function init() {
@@ -40,6 +41,7 @@ async function init() {
       snake.y = Math.random() * (canvas.height - snake.height);
       snake.direction = "walk_down";
       snake.speed = 0.2;
+      snake.health = 100; // Adiciona vida ao monstro
       monsters.push(snake);
     }
   }
@@ -75,7 +77,7 @@ function removeCopperChestplate() {
 // Função para adicionar o peitoral de estanho
 function addTinChestplate() {
   if (character && tinChestplate) {
-    character.addLayer(tinChestplate);
+    character.addLayer(tinchestplate);
   }
 }
 
@@ -167,6 +169,17 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
+// Função para atacar o monstro
+function attackMonster() {
+  if (selectedMonster) {
+    selectedMonster.health -= 10; // Diminui a vida do monstro
+    if (selectedMonster.health <= 0) {
+      monsters = monsters.filter((monster) => monster !== selectedMonster);
+      selectedMonster = null;
+    }
+  }
+}
+
 // Adicionar eventos para os botões
 document
   .getElementById("toggleWingsButton")
@@ -195,6 +208,23 @@ document
 document
   .getElementById("removeAdamantiteSwordButton")
   .addEventListener("click", removeAdamantiteSword);
+document
+  .getElementById("attackButton")
+  .addEventListener("click", attackMonster);
+
+canvas.addEventListener("click", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  selectedMonster = monsters.find(
+    (monster) =>
+      x >= monster.x &&
+      x <= monster.x + monster.width &&
+      y >= monster.y &&
+      y <= monster.y + monster.height
+  );
+});
 
 function update(time) {
   if (character) {
@@ -264,6 +294,32 @@ function draw() {
   // Renderizar monstros
   monsters.forEach((monster) => {
     monster.render(ctx, monster.x, monster.y);
+
+    // Desenhar círculo ao redor do monstro selecionado
+    if (monster === selectedMonster) {
+      ctx.beginPath();
+      ctx.arc(
+        monster.x + monster.width / 2,
+        monster.y + monster.height / 2,
+        Math.max(monster.width, monster.height),
+        0,
+        2 * Math.PI
+      );
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Exibir vida do monstro
+    ctx.fillStyle = "red";
+    ctx.fillRect(
+      monster.x,
+      monster.y - 10,
+      (monster.width * monster.health) / 100,
+      5
+    );
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(monster.x, monster.y - 10, monster.width, 5);
   });
 }
 
