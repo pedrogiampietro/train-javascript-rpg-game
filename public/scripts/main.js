@@ -11,22 +11,38 @@ let cape = null;
 let copperChestplate = null;
 let tinChestplate = null;
 let crystalLegplates = null;
+let monsters = [];
 
-// Função assíncrona para carregar e inicializar o personagem
+// Função assíncrona para carregar e inicializar o personagem e monstros
 async function init() {
   await spritesController.load();
-  character = spritesController.get("character"); // Nome do personagem na sprites.json
-  cape = spritesController.get("cape_wings"); // Nome da capa na sprites.json
-  copperChestplate = spritesController.get("copperchestplate"); // Nome do peitoral de cobre na sprites.json
-  tinChestplate = spritesController.get("tinchestplate"); // Nome do peitoral de estanho na sprites.json
-  crystalLegplates = spritesController.get("crystallegplates"); // Nome do peitoral de cristal na sprites.json
+  character = spritesController.get("character");
+  cape = spritesController.get("cape_wings");
+  copperChestplate = spritesController.get("copperchestplate");
+  tinChestplate = spritesController.get("tinchestplate");
+  crystalLegplates = spritesController.get("crystallegplates");
 
   if (character) {
     console.log("Character loaded:", character);
-    gameLoop();
+    character.x = canvas.width / 2;
+    character.y = canvas.height / 2;
   } else {
     console.error("Erro ao carregar o personagem.");
   }
+
+  // Gerar cobras aleatoriamente no mapa
+  for (let i = 0; i < 5; i++) {
+    let snake = spritesController.get("snake");
+    if (snake) {
+      snake.x = Math.random() * (canvas.width - snake.width);
+      snake.y = Math.random() * (canvas.height - snake.height);
+      snake.direction = "walk_down";
+      snake.speed = 0.2;
+      monsters.push(snake);
+    }
+  }
+
+  gameLoop();
 }
 
 // Função para alternar as asas
@@ -158,9 +174,8 @@ document
   .getElementById("removeCrystalLegplatesButton")
   .addEventListener("click", removeCrystalLegplates);
 
-function update() {
+function update(time) {
   if (character) {
-    const time = Date.now();
     if (keys.up) character.y -= character.speed;
     if (keys.down) character.y += character.speed;
     if (keys.left) character.x -= character.speed;
@@ -176,17 +191,62 @@ function update() {
 
     character.update(time);
   }
+
+  // Movimento aleatório dos monstros com pausas
+  monsters.forEach((monster) => {
+    if (!monster.pause && Math.random() < 0.02) {
+      let directions = ["walk_up", "walk_down", "walk_left", "walk_right"];
+      monster.direction =
+        directions[Math.floor(Math.random() * directions.length)];
+      monster.pause = Math.random() < 0.5; // 50% chance de fazer uma pausa
+    } else if (monster.pause) {
+      monster.pause = Math.random() < 0.98; // 98% chance de continuar pausado
+    }
+
+    if (!monster.pause) {
+      switch (monster.direction) {
+        case "walk_up":
+          monster.y -= monster.speed;
+          if (monster.y < 0) monster.y = 0;
+          break;
+        case "walk_down":
+          monster.y += monster.speed;
+          if (monster.y + monster.height > canvas.height)
+            monster.y = canvas.height - monster.height;
+          break;
+        case "walk_left":
+          monster.x -= monster.speed;
+          if (monster.x < 0) monster.x = 0;
+          break;
+        case "walk_right":
+          monster.x += monster.speed;
+          if (monster.x + monster.width > canvas.width)
+            monster.x = canvas.width - monster.width;
+          break;
+      }
+      monster.setAnimation(monster.direction);
+    } else {
+      monster.setAnimation("idle_down");
+    }
+    monster.update(time);
+  });
 }
 
 function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   if (character) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     character.render(ctx, character.x, character.y);
   }
+
+  // Renderizar monstros
+  monsters.forEach((monster) => {
+    monster.render(ctx, monster.x, monster.y);
+  });
 }
 
-function gameLoop() {
-  update();
+function gameLoop(time) {
+  update(time);
   draw();
   requestAnimationFrame(gameLoop);
 }

@@ -32,7 +32,7 @@
     },
     {
       "key": "cape_wings",
-      "src": "img/player/cape/wings.png",
+      "src": "img/player/cape/cape_wings.png",
       "width": 32,
       "height": 32,
       "offsetX": 0,
@@ -153,6 +153,26 @@
           { "x": 64, "y": 96 }
         ]
       }
+    },
+    {
+      "key": "snake",
+      "src": "img/mobs/snake.png",
+      "width": 28,
+      "height": 28,
+      "ticksPerFrame": 12,
+      "animations": {
+        "atk_right": { "length": 5, "row": 0 },
+        "walk_right": { "length": 4, "row": 1 },
+        "idle_right": { "length": 4, "row": 2 },
+        "atk_up": { "length": 5, "row": 3 },
+        "walk_up": { "length": 4, "row": 4 },
+        "idle_up": { "length": 4, "row": 5 },
+        "atk_down": { "length": 5, "row": 6 },
+        "walk_down": { "length": 4, "row": 7 },
+        "idle_down": { "length": 6, "row": 8 }
+      },
+      "offsetX": -6,
+      "offsetY": -10
     }
   ]
 }

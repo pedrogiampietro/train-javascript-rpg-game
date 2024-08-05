@@ -3,7 +3,6 @@ import Sprite from "./Sprite.js";
 export default class SpritesController {
   constructor() {
     this.sprites = {};
-    this.preloadedAnimations = [];
   }
 
   async load() {
@@ -18,15 +17,6 @@ export default class SpritesController {
         sprite.key = data.key;
         this.sprites[data.key] = sprite;
         console.log("Loaded sprite:", sprite);
-
-        if (sprite.preload) {
-          sprite.load();
-          let idleDown = sprite.animations.idle_down;
-          if (idleDown?.length > 1) {
-            this.preloadedAnimations.push(idleDown);
-            idleDown.setSpeed(sprite.idleSpeed || 200);
-          }
-        }
       }
 
       console.log("Finished loading sprite data...");
@@ -38,9 +28,5 @@ export default class SpritesController {
   get(name) {
     console.log("Getting sprite:", name, this.sprites[name]);
     return this.sprites[name];
-  }
-
-  getDeath() {
-    return this.get("death");
   }
 }

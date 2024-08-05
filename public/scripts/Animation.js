@@ -70,14 +70,6 @@ export default class Animation {
     return Date.now() - this.lastTime > this.speed && !this.stopped;
   }
 
-  getSecondFrame() {
-    return {
-      index: 1,
-      x: this.width,
-      y: this.row * this.height,
-    };
-  }
-
   reset() {
     this.lastTime = Date.now();
     this.frame = {
