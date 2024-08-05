@@ -299,27 +299,36 @@ function update(time) {
     character.update(time);
   }
 
-  // Movimento aleatório dos monstros com pausas
+  // Movimento dos monstros
   monsters.forEach((monster) => {
-    if (!monster.pause && Math.random() < 0.02) {
+    if (Math.random() < 0.02) {
       let directions = ["walk_up", "walk_down", "walk_left", "walk_right"];
       monster.direction =
         directions[Math.floor(Math.random() * directions.length)];
-      monster.pause = Math.random() < 0.5; // 50% chance de fazer uma pausa
-    } else if (monster.pause) {
-      monster.pause = Math.random() < 0.98; // 98% chance de continuar pausado
     }
 
-    if (!monster.pause) {
-      if (typeof monster.setAnimation === "function") {
-        monster.setAnimation(monster.direction);
-      }
-      monster.update(time);
-    } else {
-      if (typeof monster.setAnimation === "function") {
-        monster.setAnimation("idle_down");
-      }
+    if (monster.direction === "walk_up") {
+      monster.y -= monster.speed;
+    } else if (monster.direction === "walk_down") {
+      monster.y += monster.speed;
+    } else if (monster.direction === "walk_left") {
+      monster.x -= monster.speed;
+    } else if (monster.direction === "walk_right") {
+      monster.x += monster.speed;
     }
+
+    // Limites do canvas para monstros
+    if (monster.x < 0) monster.x = 0;
+    if (monster.y < 0) monster.y = 0;
+    if (monster.x + monster.width > canvas.width)
+      monster.x = canvas.width - monster.width;
+    if (monster.y + monster.height > canvas.height)
+      monster.y = canvas.height - monster.height;
+
+    if (typeof monster.setAnimation === "function") {
+      monster.setAnimation(monster.direction);
+    }
+    monster.update(time);
   });
 }
 
