@@ -15,6 +15,16 @@ let adamantiteSword = null;
 let monsters = [];
 let selectedMonster = null;
 
+// Configuração do personagem e sistema de experiência
+let player = {
+  level: 1,
+  experience: 0,
+  experienceToNextLevel: 100,
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  speed: 2,
+};
+
 // Função assíncrona para carregar e inicializar o personagem e monstros
 async function init() {
   await spritesController.load();
@@ -27,26 +37,33 @@ async function init() {
 
   if (character) {
     console.log("Character loaded:", character);
-    character.x = canvas.width / 2;
-    character.y = canvas.height / 2;
+    character.x = player.x;
+    character.y = player.y;
   } else {
     console.error("Erro ao carregar o personagem.");
   }
 
   // Gerar cobras aleatoriamente no mapa
-  for (let i = 0; i < 5; i++) {
+  spawnSnakes(5);
+
+  gameLoop();
+}
+
+// Função para gerar cobras aleatoriamente no mapa
+function spawnSnakes(count) {
+  for (let i = 0; i < count; i++) {
     let snake = spritesController.get("snake");
     if (snake) {
+      snake = Object.create(snake); // Cria um novo objeto a partir do protótipo
       snake.x = Math.random() * (canvas.width - snake.width);
       snake.y = Math.random() * (canvas.height - snake.height);
       snake.direction = "walk_down";
       snake.speed = 0.2;
       snake.health = 100; // Adiciona vida ao monstro
+      snake.damage = []; // Array para mostrar danos
       monsters.push(snake);
     }
   }
-
-  gameLoop();
 }
 
 // Função para alternar as asas
@@ -172,12 +189,50 @@ document.addEventListener("keyup", (event) => {
 // Função para atacar o monstro
 function attackMonster() {
   if (selectedMonster) {
-    selectedMonster.health -= 10; // Diminui a vida do monstro
+    console.log("Attacking monster:", selectedMonster);
+    let damage = 10;
+    selectedMonster.health -= damage; // Diminui a vida do monstro
+    selectedMonster.damage.push({ value: damage, time: Date.now() }); // Adiciona o dano ao array de danos
     if (selectedMonster.health <= 0) {
+      console.log("Monster defeated:", selectedMonster);
       monsters = monsters.filter((monster) => monster !== selectedMonster);
+      gainExperience(50); // Ganha experiência ao derrotar um monstro
+      respawnMonster(selectedMonster); // Chama a função de respawn
       selectedMonster = null;
     }
+  } else {
+    console.log("No monster selected");
   }
+}
+
+// Função para ganhar experiência
+function gainExperience(amount) {
+  player.experience += amount;
+  while (player.experience >= player.experienceToNextLevel) {
+    player.experience -= player.experienceToNextLevel;
+    player.level++;
+    player.experienceToNextLevel = Math.round(
+      player.experienceToNextLevel * 1.5
+    ); // Aumenta a experiência necessária para o próximo nível
+  }
+}
+
+// Função para respawn do monstro
+function respawnMonster(monster) {
+  setTimeout(() => {
+    let newSnake = spritesController.get("snake");
+    if (newSnake) {
+      newSnake = Object.create(newSnake); // Cria um novo objeto a partir do protótipo
+      newSnake.x = Math.random() * (canvas.width - newSnake.width);
+      newSnake.y = Math.random() * (canvas.height - newSnake.height);
+      newSnake.direction = "walk_down";
+      newSnake.speed = 0.2;
+      newSnake.health = 100; // Adiciona vida ao novo monstro
+      newSnake.damage = []; // Array para mostrar danos
+      monsters.push(newSnake);
+      console.log("Monster respawned:", newSnake);
+    }
+  }, 5000); // Respawn após 5 segundos
 }
 
 // Adicionar eventos para os botões
@@ -256,31 +311,15 @@ function update(time) {
     }
 
     if (!monster.pause) {
-      switch (monster.direction) {
-        case "walk_up":
-          monster.y -= monster.speed;
-          if (monster.y < 0) monster.y = 0;
-          break;
-        case "walk_down":
-          monster.y += monster.speed;
-          if (monster.y + monster.height > canvas.height)
-            monster.y = canvas.height - monster.height;
-          break;
-        case "walk_left":
-          monster.x -= monster.speed;
-          if (monster.x < 0) monster.x = 0;
-          break;
-        case "walk_right":
-          monster.x += monster.speed;
-          if (monster.x + monster.width > canvas.width)
-            monster.x = canvas.width - monster.width;
-          break;
+      if (typeof monster.setAnimation === "function") {
+        monster.setAnimation(monster.direction);
       }
-      monster.setAnimation(monster.direction);
+      monster.update(time);
     } else {
-      monster.setAnimation("idle_down");
+      if (typeof monster.setAnimation === "function") {
+        monster.setAnimation("idle_down");
+      }
     }
-    monster.update(time);
   });
 }
 
@@ -320,7 +359,37 @@ function draw() {
     );
     ctx.strokeStyle = "black";
     ctx.strokeRect(monster.x, monster.y - 10, monster.width, 5);
+
+    // Mostrar danos
+    monster.damage.forEach((d, index) => {
+      ctx.fillStyle = "yellow";
+      ctx.fillText(d.value, monster.x, monster.y - 20 - index * 15);
+      if (Date.now() - d.time > 1000) {
+        monster.damage.splice(index, 1); // Remove dano após 1 segundo
+      }
+    });
   });
+
+  // Mostrar nível e experiência do jogador
+  ctx.fillStyle = "black";
+  ctx.font = "16px Arial";
+  ctx.fillText(`Level: ${player.level}`, 10, 20);
+  ctx.fillText(
+    `XP: ${player.experience}/${player.experienceToNextLevel}`,
+    10,
+    40
+  );
+
+  // Desenhar barra de experiência
+  ctx.fillStyle = "green";
+  ctx.fillRect(
+    10,
+    50,
+    (300 * player.experience) / player.experienceToNextLevel,
+    20
+  );
+  ctx.strokeStyle = "black";
+  ctx.strokeRect(10, 50, 300, 20);
 }
 
 function gameLoop(time) {
