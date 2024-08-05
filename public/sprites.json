@@ -93,6 +93,38 @@
       }
     },
     {
+      "key": "adamantitesworth",
+      "src": "img/player/weapon/adamantitesworth.png",
+      "width": 48,
+      "height": 48,
+      "offsetX": -10,
+      "offsetY": -8,
+      "ticksPerFrame": 4,
+      "animations": {
+        "idle_down": [{ "x": 0, "y": 0 }],
+        "walk_down": [
+          { "x": 0, "y": 0 },
+          { "x": 48, "y": 0 },
+          { "x": 96, "y": 0 }
+        ],
+        "walk_right": [
+          { "x": 0, "y": 48 },
+          { "x": 48, "y": 48 },
+          { "x": 96, "y": 48 }
+        ],
+        "walk_up": [
+          { "x": 0, "y": 96 },
+          { "x": 48, "y": 96 },
+          { "x": 96, "y": 96 }
+        ],
+        "walk_left": [
+          { "x": 0, "y": 144 },
+          { "x": 48, "y": 144 },
+          { "x": 96, "y": 144 }
+        ]
+      }
+    },
+    {
       "key": "tinchestplate",
       "src": "img/player/chestplate/tinchestplate.png",
       "width": 32,

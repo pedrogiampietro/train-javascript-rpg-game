@@ -11,6 +11,7 @@ let cape = null;
 let copperChestplate = null;
 let tinChestplate = null;
 let crystalLegplates = null;
+let adamantiteSword = null;
 let monsters = [];
 
 // Função assíncrona para carregar e inicializar o personagem e monstros
@@ -21,6 +22,7 @@ async function init() {
   copperChestplate = spritesController.get("copperchestplate");
   tinChestplate = spritesController.get("tinchestplate");
   crystalLegplates = spritesController.get("crystallegplates");
+  adamantiteSword = spritesController.get("adamantitesworth");
 
   if (character) {
     console.log("Character loaded:", character);
@@ -95,6 +97,20 @@ function addCrystalLegplates() {
 function removeCrystalLegplates() {
   if (character && crystalLegplates) {
     character.removeLayer("crystallegplates");
+  }
+}
+
+// Função para adicionar a espada
+function addAdamantiteSword() {
+  if (character && adamantiteSword) {
+    character.addLayer(adamantiteSword);
+  }
+}
+
+// Função para remover a espada
+function removeAdamantiteSword() {
+  if (character && adamantiteSword) {
+    character.removeLayer("adamantitesworth");
   }
 }
 
@@ -173,6 +189,12 @@ document
 document
   .getElementById("removeCrystalLegplatesButton")
   .addEventListener("click", removeCrystalLegplates);
+document
+  .getElementById("addAdamantiteSwordButton")
+  .addEventListener("click", addAdamantiteSword);
+document
+  .getElementById("removeAdamantiteSwordButton")
+  .addEventListener("click", removeAdamantiteSword);
 
 function update(time) {
   if (character) {
